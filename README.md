@@ -2,8 +2,6 @@
 Backend code with Java Spring Boot
 An example of a RESTful WebServer developed using Spring & SpringBoot.
 
-This simple server acts a Location-Service - it will return details of a physical location given a valid identifier (in the form of a UUID).
-
 Requirements
 The fully fledged server uses the following:
 
