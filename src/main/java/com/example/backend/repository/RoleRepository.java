@@ -1,0 +1,16 @@
+package com.example.backend.repository;
+
+import com.example.backend.model.ERole;
+import com.example.backend.model.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+/**
+ * Created by Admin on 10/9/2023
+ */
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(ERole name);
+}
