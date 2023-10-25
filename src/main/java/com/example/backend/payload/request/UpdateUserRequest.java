@@ -18,7 +18,7 @@ public class UpdateUserRequest {
     @Email
     private String email;
 
-    private Set<String> role;
+//    private Set<String> role;
 
 //    @NotBlank
 //    @Size(min = 6, max = 40)

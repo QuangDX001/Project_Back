@@ -7,15 +7,17 @@ import com.example.backend.repository.TaskRepository;
 import com.example.backend.security.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", maxAge = 36000)
 @RestController
 @RequestMapping("/api/v1/")
+@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
 public class TaskController {
     @Autowired
     private TaskRepository taskRepository;

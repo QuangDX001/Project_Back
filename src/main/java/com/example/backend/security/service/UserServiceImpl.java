@@ -5,11 +5,18 @@ import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.ERole;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
+import com.example.backend.payload.dto.PagingDTO;
+import com.example.backend.payload.dto.UserDTO;
 import com.example.backend.payload.request.CreateUserRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
+import com.example.backend.payload.response.PageResponse;
 import com.example.backend.repository.RoleRepository;
 import com.example.backend.repository.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +24,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Admin on 10/10/2023
  */
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -30,6 +38,8 @@ public class UserServiceImpl implements UserService{
     private RoleRepository roleRepository;
     @Autowired
     PasswordEncoder encoder;
+    @Autowired
+    ModelMapper modelMapper;
 
 
     @Override
@@ -70,11 +80,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public void resetPassword(User user, String newPassword) {
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
     public User getUserById(long id) {
         Optional<User> result = userRepository.findById(id);
-        if(result.isPresent()) {
+        if (result.isPresent()) {
             return result.get();
-        }else {
+        } else {
             throw new ResourceNotFoundException("No user found");
         }
     }
@@ -89,7 +105,45 @@ public class UserServiceImpl implements UserService{
         return userRepository.findAllOrderByNameAsc();
     }
 
-    public Set<Role> validatedRoles(Set<String> strRoles){
+    @Override
+    public User getByUsername(String username) {
+        Optional<User> account = userRepository.findByUsername(username);
+        if (account.isPresent()) {
+            User user = account.get();
+            return user;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        // create Pageable instance
+        PageRequest pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+
+        Page<User> users = userRepository.findAll(pageable);
+
+        // get content for page object
+        List<User> listOfPosts = users.getContent();
+
+        List<PagingDTO> content = listOfPosts.stream().map(user -> modelMapper.map(user, PagingDTO.class)).collect(Collectors.toList());
+
+        PageResponse pageResponse = new PageResponse();
+        pageResponse.setContent(content);
+        pageResponse.setPageNo(users.getNumber());
+        pageResponse.setPageSize(users.getSize());
+        pageResponse.setTotalElements(users.getTotalElements());
+        pageResponse.setTotalPages(users.getTotalPages());
+        pageResponse.setLast(users.isLast());
+
+        return pageResponse;
+    }
+
+
+    public Set<Role> validatedRoles(Set<String> strRoles) {
         Set<Role> roles = new HashSet<>();
         if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
@@ -117,9 +171,4 @@ public class UserServiceImpl implements UserService{
         }
         return roles;
     }
-
-//    @Override
-//    public PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir) {
-//        return null;
-//    }
 }

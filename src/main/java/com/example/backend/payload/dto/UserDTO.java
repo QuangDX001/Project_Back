@@ -1,5 +1,6 @@
-package com.example.backend.dto;
+package com.example.backend.payload.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,8 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class UserDto {
+@AllArgsConstructor
+public class UserDTO {
     private Long id;
     @NotBlank
     @Size(min = 3, max = 20)
@@ -20,7 +22,5 @@ public class UserDto {
     @Size(max = 50)
     @Email
     private String email;
-
-    private List<String> roles;
 
 }

@@ -4,6 +4,7 @@ package com.example.backend.security.service;
 import com.example.backend.model.User;
 import com.example.backend.payload.request.CreateUserRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
+import com.example.backend.payload.response.PageResponse;
 
 import java.util.List;
 
@@ -20,11 +21,15 @@ public interface UserService {
 
     void deleteUser(long id);
 
+    void resetPassword(User user,String newPassword);
+
     User getUserById(long id);
 
     List<User> findAllOrderByNameDesc();
 
     List<User> findAllOrderByNameAsc();
 
-    //PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir);
+    User getByUsername(String username);
+
+    PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir);
 }

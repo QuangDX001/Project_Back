@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 
 /**
@@ -31,9 +32,9 @@ public class JwtUtils {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
+                .setSubject(String.format("%s,%s", userPrincipal.getId(), userPrincipal.getUsername()))
                 .setIssuedAt(new Date())
-                .setExpiration((new Date((new Date()).getTime() + jwtExpirationMs)))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
 
@@ -43,26 +44,47 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
-    public String getUsernameFromJwtToken(String token){
-        return Jwts.parserBuilder().setSigningKey(key()).build()
-                .parseClaimsJws(token).getBody().getSubject();
+//    public String getUsernameFromJwtToken(String token){
+//        return Jwts.parserBuilder().setSigningKey(key()).build()
+//                .parseClaimsJws(token).getBody().getSubject();
+//    }
+//
+//    public long getIdFromJwtToken(String token) {
+//        String subject = getUsernameFromJwtToken(token);
+//
+//        // Split the subject to get ID and username
+//        String[] idAndUsername = subject.split(",");
+//
+//        // Check if there are at least two parts (ID and username)
+//        if (idAndUsername.length >= 2) {
+//            return Long.parseLong(idAndUsername[1].trim());
+//        } else {
+//            // Handle the case where the subject does not contain the expected format
+//            throw new IllegalArgumentException("Invalid subject format in JWT token");
+//        }
+//    }
+
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token).getBody();
+    }
+    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claimsResolver.apply(claims);
     }
 
-    public int getIdFromJwtToken(String token) {
-        String subject = getUsernameFromJwtToken(token);
-
-        // Split the subject to get ID and username
+    public long getIdFromJwtToken(String token){
+        String subject = getClaimFromToken(token,Claims::getSubject);
         String[] idAndUsername = subject.split(",");
-
-        // Check if there are at least two parts (ID and username)
-        if (idAndUsername.length >= 2) {
-            return Integer.parseInt(idAndUsername[0].trim());
-        } else {
-            // Handle the case where the subject does not contain the expected format
-            throw new IllegalArgumentException("Invalid subject format in JWT token");
-        }
+        long id = Integer.parseInt(idAndUsername[0]);
+        return id;
     }
 
+    public String getUsernameFromJwtToken(String token) {
+        String subject = getClaimFromToken(token,Claims::getSubject);
+        String[] idAndUsername = subject.split(",");
+        String username = idAndUsername[1];
+        return username;
+    }
 
     public boolean validateJwtToken(String authToken) {
         try {

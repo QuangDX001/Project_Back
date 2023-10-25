@@ -1,26 +1,20 @@
 package com.example.backend.payload.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.List;
 
+/**
+ * Created by Admin on 10/23/2023
+ */
 @Data
 @NoArgsConstructor
-public class UserDto {
+@AllArgsConstructor
+public class PagingDTO {
     private Long id;
-    @NotBlank
-    @Size(min = 3, max = 20)
     private String username;
-
-    @NotBlank
-    @Size(max = 50)
-    @Email
     private String email;
-
     private List<String> roles;
-
 }
