@@ -1,26 +1,37 @@
 package com.example.backend.payload.request;
 
+import com.example.backend.security.config.AppConstants;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+
+//import javax.validation.constraints.Email;
+//import javax.validation.constraints.NotBlank;
+//import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateUserRequest {
-    @NotBlank
-    @Size(min = 3, max = 20)
-    private String username;
+    @NotBlank(message = "Please input!")
+    private String firstName;
 
-    @NotBlank
-    @Size(max = 50)
-    @Email
-    private String email;
+    @NotBlank(message = "Please input!")
+    private String lastName;
 
-//    private Set<String> role;
+    @NotBlank(message = "Please input address!")
+    private String address;
 
-//    @NotBlank
-//    @Size(min = 6, max = 40)
-//    private String password;
+    @NotBlank(message = "Please input phone number!")
+    @Length(min = 10, max = 10, message = "Phone number must have 10 digits")
+    @Pattern(regexp = AppConstants.PHONE_REGEX, message = "Phone number only contain numbers")
+    private String phone;
+
 }

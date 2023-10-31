@@ -1,10 +1,14 @@
 package com.example.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotBlank;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,8 +40,9 @@ public class User {
     @Size(max = 60)
     private String email;
 
-    @NotBlank
+    @NotNull
     @Size(max = 120)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -46,10 +51,12 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
+    @NotNull
+    @Column(name = "enable", nullable = false)
+    private Byte enable;
+
+    @NotNull
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Account account;
 
 }

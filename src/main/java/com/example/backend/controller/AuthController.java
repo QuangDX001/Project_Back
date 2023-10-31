@@ -4,17 +4,15 @@ package com.example.backend.controller;
 import com.example.backend.payload.dto.UserDTO;
 import com.example.backend.payload.dto.UserMapper;
 import com.example.backend.exception.ExceptionObject;
-import com.example.backend.model.Role;
-import com.example.backend.model.User;
 import com.example.backend.payload.request.LoginRequest;
 import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.response.JwtResponse;
-import com.example.backend.payload.response.MessageResponse;
 import com.example.backend.repository.RoleRepository;
-import com.example.backend.repository.UserRepository;
 import com.example.backend.security.jwt.JwtUtils;
 import com.example.backend.security.service.UserDetailsImpl;
-import com.example.backend.security.service.UserServiceImpl;
+import com.example.backend.security.service.users.UserServiceImpl;
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +25,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+//import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -44,9 +41,6 @@ import java.util.stream.Collectors;
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
-
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
     RoleRepository roleRepository;
@@ -108,27 +102,19 @@ public class AuthController {
             Map<String, String> errorMap = new HashMap<>();
             int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
             exceptionObject.setCode(errorCode);
-            if (userRepository.existsByUsername(signupRequest.getUsername())) {
+            if (userService.getByUsername(signupRequest.getUsername()) != null) {
                 errorMap.put("username", "Username is already taken!");
                 exceptionObject.setError(errorMap);
                 return new ResponseEntity<>(exceptionObject, HttpStatus.BAD_REQUEST);
             } else {
-                if (userRepository.existsByEmail(signupRequest.getEmail())) {
+                if (userService.getUserByEmail(signupRequest.getEmail()) != null) {
                     errorMap.put("email", "Email is already taken!");
                     exceptionObject.setError(errorMap);
                     return new ResponseEntity<>(exceptionObject, HttpStatus.BAD_REQUEST);
                 } else {
                     //sign up
-                    User user = new User(signupRequest.getUsername(),
-                            signupRequest.getEmail(),
-                            encoder.encode(signupRequest.getPassword()));
-                    Set<String> strRoles = signupRequest.getRole();
-                    Set<Role> roles;
-                    roles = userService.validatedRoles(strRoles);
-                    user.setRoles(roles);
-                    userRepository.save(user);
-
-                    return ResponseEntity.ok().body(user);
+                    userService.signUp(signupRequest);
+                    return new ResponseEntity<>("Signup successfully", HttpStatus.OK);
                 }
             }
         } catch (RuntimeException e){

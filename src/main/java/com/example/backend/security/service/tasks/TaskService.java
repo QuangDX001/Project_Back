@@ -1,4 +1,4 @@
-package com.example.backend.security.service;
+package com.example.backend.security.service.tasks;
 
 import com.example.backend.model.Task;
 

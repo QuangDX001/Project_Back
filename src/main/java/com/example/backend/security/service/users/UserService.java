@@ -1,8 +1,8 @@
-package com.example.backend.security.service;
+package com.example.backend.security.service.users;
 
 
 import com.example.backend.model.User;
-import com.example.backend.payload.request.CreateUserRequest;
+import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;
 
@@ -15,13 +15,13 @@ import java.util.List;
 public interface UserService {
     List<User> getAllUsers();
 
-    User createUser(CreateUserRequest createUserRequest);
+    User signUp(SignupRequest signupRequest);
 
-    User updateUser(long id, UpdateUserRequest updateUserRequest);
-
-    void deleteUser(long id);
+    void updateUser(long id, UpdateUserRequest updateUserRequest);
 
     void resetPassword(User user,String newPassword);
+
+    User getUserByEmail(String email);
 
     User getUserById(long id);
 
@@ -30,6 +30,8 @@ public interface UserService {
     List<User> findAllOrderByNameAsc();
 
     User getByUsername(String username);
+
+    void changeEnableStatus(User user);
 
     PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir);
 }

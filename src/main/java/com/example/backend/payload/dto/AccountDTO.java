@@ -1,9 +1,12 @@
 package com.example.backend.payload.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotBlank;
+//import javax.validation.constraints.Size;
+
 
 /**
  * Created by Admin on 10/25/2023

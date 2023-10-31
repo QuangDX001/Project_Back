@@ -1,4 +1,4 @@
-package com.example.backend.security.service;
+package com.example.backend.security.service.users;
 
 import com.example.backend.exception.BankTransactionException;
 

@@ -4,17 +4,17 @@ package com.example.backend.controller;
 import com.example.backend.exception.ExceptionObject;
 import com.example.backend.exception.StaffSelfDisableException;
 import com.example.backend.model.User;
+import com.example.backend.payload.dto.ChangePassDTO;
 import com.example.backend.payload.dto.ProfileDTO;
 import com.example.backend.payload.dto.UserDTO;
 import com.example.backend.payload.dto.UserMapper;
-import com.example.backend.payload.request.CreateUserRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
-import com.example.backend.payload.response.MessageResponse;
 import com.example.backend.payload.response.PageResponse;
 import com.example.backend.security.config.AppConstants;
 import com.example.backend.security.jwt.JwtUtils;
-import com.example.backend.security.service.UserDetailsImpl;
-import com.example.backend.security.service.UserService;
+import com.example.backend.security.service.users.EmailService;
+import com.example.backend.security.service.users.UserService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+//import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,12 @@ public class UserController {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private PasswordEncoder encoder;
+
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
@@ -85,90 +92,109 @@ public class UserController {
         return userService.getPageUsers(pageNo, pageSize, sortBy, sortDir);
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest createUserRequest) {
-
-        User useRequest = userService.createUser(createUserRequest);
-
-        // convert entity to DTO
-        UserDTO userResponse = modelMapper.map(useRequest, UserDTO.class);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
-    }
-
     @PutMapping("/updateUser/{id}")
-    //@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest updateUserRequest) {
-
-        User userRequest = userService.updateUser(id, updateUserRequest);
-
-        UserDTO userResponse = modelMapper.map(userRequest, UserDTO.class);
-
-        return ResponseEntity.ok().body(userResponse);
-
-//        try{
-//            long tokenId = getIdFromToken();
-//            //User user = userService.getUserById(tokenId);
-//            if (tokenId != id) {
-//                throw new AccessDeniedException("Bạn không có quyền sửa tài khoản này");
-//            } else {
-//                userService.updateUser(id, updateUserRequest);
-//                return new ResponseEntity<>("Chỉnh sửa tài khoản thành công.", HttpStatus.OK);
-//            }
-//        } catch (AccessDeniedException e){
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-//        } catch (Exception e){
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-//        }
+    public ResponseEntity<?> updateUser(@PathVariable long id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        try {
+            long tokenId = getIdFromToken();
+            //User user = userService.getUserById(tokenId);
+            if (tokenId != id) {
+                throw new AccessDeniedException("You don't have the right to update this account");
+            } else {
+                userService.updateUser(id, updateUserRequest);
+                return new ResponseEntity<>("Update user successfully.", HttpStatus.OK);
+            }
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable(name = "id") Long id) {
-//        userService.deleteUser(id);
-//        return ResponseEntity.ok("Delete success");
-
-        try {
-            //User user = userService.getUserById(id);
+    @PostMapping("/sendForgotPassword")
+    public ResponseEntity<?> resetPassword(@RequestParam String email){
+        try{
             ExceptionObject exceptionObject = new ExceptionObject();
             Map<String, String> errorMap = new HashMap<>();
             int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
             exceptionObject.setCode(errorCode);
-            long currentUser = getIdFromToken();
-            if(id == currentUser){
-                throw new StaffSelfDisableException("Can't delete yourself");
+            if(userService.getUserByEmail(email) == null){
+                errorMap.put("email", "This email doesn't exist");
+                exceptionObject.setError(errorMap);
+                return new ResponseEntity<>(exceptionObject, HttpStatus.BAD_REQUEST);
+            } else {
+                emailService.sendMail(email);
+                return new ResponseEntity<>("Email Sent! Please check your email", HttpStatus.OK);
             }
-            userService.deleteUser(id);
-            return new ResponseEntity<>("Delete success", HttpStatus.OK);
+        } catch (Exception e){
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/changePassword/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable long id, @Valid @RequestBody ChangePassDTO dto) {
+        try {
+            long tokenId = getIdFromToken();
+            ExceptionObject exceptionObject = new ExceptionObject();
+            Map<String, String> errorMap = new HashMap<>();
+            int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
+            exceptionObject.setCode(errorCode);
+            User existUser = userService.getUserById(id);
+            if (tokenId != id) {
+                errorMap.put("exception", "You don't have the right to change password of this account");
+                exceptionObject.setError(errorMap);
+                return new ResponseEntity<>(exceptionObject, HttpStatus.FORBIDDEN);
+            } else if (!encoder.matches(dto.getPassword(), existUser.getPassword())) {
+                errorMap.put("password", "Password is incorrect");
+                exceptionObject.setError(errorMap);
+                return new ResponseEntity<>(exceptionObject, HttpStatus.BAD_REQUEST);
+            } else if (!dto.getNewPassword().equals(dto.getConfirmNewPassword())) {
+                errorMap.put("confirmNewPassword", "Password not match, please confirm again");
+                exceptionObject.setError(errorMap);
+                return new ResponseEntity<>(exceptionObject, HttpStatus.BAD_REQUEST);
+            } else {
+                userService.resetPassword(existUser, dto.getNewPassword());
+                return new ResponseEntity<>("Change password succesfully", HttpStatus.OK);
+            }
         } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/changeEnableStatus/{id}")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> changeEnableStatus(@PathVariable(name = "id") Long id){
+        try{
+            User user = userService.getUserById(id);
+            ExceptionObject exceptionObject = new ExceptionObject();
+            Map<String, String> errorMap = new HashMap<>();
+            int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
+            exceptionObject.setCode(errorCode);
+            long currentAdmin = getIdFromToken();
+            if(currentAdmin == id){
+                throw new StaffSelfDisableException("You can not disable yourself");
+            }
+            userService.changeEnableStatus(user);
+            return new ResponseEntity<>("Change status successfully", HttpStatus.OK);
+        }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
     @GetMapping("/id/{id}")
-//    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserById(@PathVariable(name = "id") Long id) {
         try {
-            //long idToken =  getIdFromToken();
             User user = userService.getUserById(id);
-            //if (user.getId() == idToken){
             ProfileDTO dto = UserMapper.convertUserToProfile(user);
             return ResponseEntity.ok().body(dto);
-//            } else {
-//                return new ResponseEntity<>("It seems something goes wrong", HttpStatus.NOT_FOUND);
-//            }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/getProfile/{username}")
-    //@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserByName(@PathVariable(name = "username") String username) {
         try {
             long id = getIdFromToken();
-//            User u = userService.getUserById(id);
             User user = userService.getByUsername(username);
             if (user.getId() == id) {
                 ProfileDTO dto = UserMapper.convertUserToProfile(user);

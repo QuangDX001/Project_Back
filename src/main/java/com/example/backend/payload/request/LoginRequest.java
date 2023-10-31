@@ -1,16 +1,18 @@
 package com.example.backend.payload.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+//import javax.validation.constraints.NotBlank;
+
 
 @Data
 public class LoginRequest {
-	@NotBlank(message = "Hãy nhập tên đăng nhập")
+	@NotBlank(message = "Input Username")
 	//@Length(min = 5, max = 50)
 	private String username;
 
-	@NotBlank(message = "Hãy nhập mật khẩu")
+	@NotBlank(message = "Input Password")
 	//@Length(min = 5, max = 10)
 	private String password;
 

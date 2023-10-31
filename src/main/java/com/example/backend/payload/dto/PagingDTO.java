@@ -17,4 +17,5 @@ public class PagingDTO {
     private String username;
     private String email;
     private List<String> roles;
+    private boolean enable;
 }

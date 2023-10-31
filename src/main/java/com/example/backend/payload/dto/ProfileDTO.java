@@ -10,4 +10,9 @@ public class ProfileDTO {
     private Long id;
     private String username;
     private String email;
+    private String address;
+    private String phone;
+    private double balance;
+    private String firstName;
+    private String lastName;
 }

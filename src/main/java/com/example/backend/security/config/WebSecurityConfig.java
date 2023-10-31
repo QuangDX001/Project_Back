@@ -59,10 +59,15 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(csrf -> csrf.disable())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizeHandler))
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(unauthorizeHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**", "/api/v1/**", "/api/crud/**").permitAll()
+                        auth.requestMatchers("/api/auth/**",
+                                        "/api/v1/**",
+                                        "/api/crud/**",
+                                        "/api/crud/*/*",
+                                        "/api/crud/sendForgotPassword").permitAll()
                                 .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);

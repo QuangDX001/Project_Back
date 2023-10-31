@@ -15,12 +15,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
-    Boolean existsByUsername(String username);
-    Boolean existsByEmail(String email);
 
     @Query("SELECT e FROM User e ORDER BY e.username DESC")
     List<User> findAllOrderByNameDesc();
 
     @Query(value = "SELECT * FROM users e ORDER BY e.username", nativeQuery = true)
     List<User> findAllOrderByNameAsc();
+
+    @Query(value = "SELECT a FROM User a WHERE a.email =:email")
+    User getUserByEmail(String email);
 }

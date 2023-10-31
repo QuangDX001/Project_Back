@@ -1,13 +1,11 @@
-package com.example.backend.security.service;
+package com.example.backend.security.service.users;
 
-import com.example.backend.exception.DuplicateRecordException;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.ERole;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.payload.dto.PagingDTO;
-import com.example.backend.payload.dto.UserDTO;
-import com.example.backend.payload.request.CreateUserRequest;
+import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;
 import com.example.backend.repository.RoleRepository;
@@ -30,7 +28,7 @@ import java.util.stream.Collectors;
  * Created by Admin on 10/10/2023
  */
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService  {
 
     @Autowired
     private UserRepository userRepository;
@@ -41,48 +39,36 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ModelMapper modelMapper;
 
-
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Override
-    public User createUser(CreateUserRequest createUserRequest) {
-        if (userRepository.existsByUsername(createUserRequest.getUsername())) {
-            throw new DuplicateRecordException("New email already exists in the system");
-        }
-        if (userRepository.existsByEmail(createUserRequest.getEmail())) {
-            throw new DuplicateRecordException("New email already exists in the system");
-        }
-        //create user
-        User user = new User(createUserRequest.getUsername(),
-                createUserRequest.getEmail(),
-                encoder.encode(createUserRequest.getPassword()));
-        Set<String> strRoles = createUserRequest.getRole();
-        Set<Role> roles;
-        roles = validatedRoles(strRoles);
-        user.setRoles(roles);
+    public User signUp(SignupRequest signupRequest) {
+        User user = convertSignupRequestToUser(signupRequest);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void updateUser(long id, UpdateUserRequest updateUserRequest) {
+        User user = userRepository.getReferenceById(id);
+        user.getAccount().setFirstName(updateUserRequest.getFirstName());
+        user.getAccount().setLastName(updateUserRequest.getLastName());
+        user.getAccount().setAddress(updateUserRequest.getAddress());
+        user.getAccount().setPhone(updateUserRequest.getPhone());
         userRepository.save(user);
-        return user;
-    }
-
-    @Override
-    public User updateUser(long id, UpdateUserRequest updateUserRequest) {
-        return null;
-    }
-
-    @Override
-    public void deleteUser(long id) {
-        User result = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No user found"));
-        userRepository.delete(result);
     }
 
     @Override
     public void resetPassword(User user, String newPassword) {
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.getUserByEmail(email);
     }
 
     @Override
@@ -114,6 +100,16 @@ public class UserServiceImpl implements UserService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void changeEnableStatus(User user) {
+        if(user.getEnable() == 1){
+            user.setEnable((byte) 0);
+        } else {
+            user.setEnable((byte) 1);
+        }
+        userRepository.save(user);
     }
 
     @Override
@@ -170,5 +166,16 @@ public class UserServiceImpl implements UserService {
             });
         }
         return roles;
+    }
+
+    private User convertSignupRequestToUser(SignupRequest signupRequest) {
+        User user = new User();
+        user.setUsername(signupRequest.getUsername());
+        user.setPassword(encoder.encode(signupRequest.getPassword()));
+        Set<String> strRoles = signupRequest.getRole();
+        Set<Role> roles = validatedRoles(strRoles);
+        user.setRoles(roles);
+        user.setEnable((byte) 1);
+        return user;
     }
 }

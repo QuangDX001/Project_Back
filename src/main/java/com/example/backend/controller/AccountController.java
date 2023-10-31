@@ -4,7 +4,7 @@ import com.example.backend.exception.BankTransactionException;
 import com.example.backend.payload.dto.AccountDTO;
 import com.example.backend.payload.request.TransferRequest;
 import com.example.backend.repository.AccountRepository;
-import com.example.backend.security.service.AccountService;
+import com.example.backend.security.service.users.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

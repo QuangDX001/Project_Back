@@ -15,7 +15,7 @@ public class Task {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "isDone", nullable = false, columnDefinition = "boolean default false")
+    @Column(name = "is_Done", nullable = false, columnDefinition = "boolean default false")
     private boolean isDone;
 
     public Task() {

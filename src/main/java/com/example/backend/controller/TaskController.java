@@ -4,7 +4,7 @@ package com.example.backend.controller;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.Task;
 import com.example.backend.repository.TaskRepository;
-import com.example.backend.security.service.TaskService;
+import com.example.backend.security.service.tasks.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
