@@ -4,10 +4,7 @@ package com.example.backend.controller;
 import com.example.backend.exception.ExceptionObject;
 import com.example.backend.exception.StaffSelfDisableException;
 import com.example.backend.model.User;
-import com.example.backend.payload.dto.ChangePassDTO;
-import com.example.backend.payload.dto.ProfileDTO;
-import com.example.backend.payload.dto.UserDTO;
-import com.example.backend.payload.dto.UserMapper;
+import com.example.backend.payload.dto.*;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;
 import com.example.backend.security.config.AppConstants;
@@ -161,7 +158,7 @@ public class UserController {
     }
 
     @PutMapping("/changeEnableStatus/{id}")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeEnableStatus(@PathVariable(name = "id") Long id){
         try{
             User user = userService.getUserById(id);
@@ -178,6 +175,19 @@ public class UserController {
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
+    }
+
+    @PutMapping("/resetPasswordForAdmin/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> resetPassForAdmin(@PathVariable("username") String username,
+                                               @Valid @RequestBody ResetPasswordAdminDTO dto){
+        try{
+            userService.resetPasswordForAdmin(username, dto);
+            return new ResponseEntity<>("Reset password for " + username + " successfully", HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);    
+        }
+        
     }
 
     @GetMapping("/id/{id}")

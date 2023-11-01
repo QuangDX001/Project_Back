@@ -5,6 +5,7 @@ import com.example.backend.model.ERole;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.payload.dto.PagingDTO;
+import com.example.backend.payload.dto.ResetPasswordAdminDTO;
 import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;
@@ -63,6 +64,13 @@ public class UserServiceImpl implements UserService  {
     @Override
     public void resetPassword(User user, String newPassword) {
         user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void resetPasswordForAdmin(String username, ResetPasswordAdminDTO dto) {
+        User user = getByUsername(username);
+        user.setPassword(encoder.encode(dto.getNewPassword()));
         userRepository.save(user);
     }
 

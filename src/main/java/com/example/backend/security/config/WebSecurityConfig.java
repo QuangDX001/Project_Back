@@ -67,7 +67,8 @@ public class WebSecurityConfig {
                                         "/api/v1/**",
                                         "/api/crud/**",
                                         "/api/crud/*/*",
-                                        "/api/crud/sendForgotPassword").permitAll()
+                                        "/api/crud/sendForgotPassword",
+                                        "/api/crud/resetPasswordForAdmin/*").permitAll()
                                 .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
