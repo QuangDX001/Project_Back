@@ -1,22 +1,31 @@
-# Project_Back
-Backend code with Java Spring Boot
-An example of a RESTful WebServer developed using Spring & SpringBoot.
+# springboot-sample-app
 
-Requirements
-The fully fledged server uses the following:
+[![Build Status](https://travis-ci.org/codecentric/springboot-sample-app.svg?branch=master)](https://travis-ci.org/codecentric/springboot-sample-app)
+[![Coverage Status](https://coveralls.io/repos/github/codecentric/springboot-sample-app/badge.svg?branch=master)](https://coveralls.io/github/codecentric/springboot-sample-app?branch=master)
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-Spring Framework
-SpringBoot
+Minimal [Spring Boot](http://projects.spring.io/spring-boot/) sample app.
 
-Dependencies
-There are a number of third-party dependencies used in the project. Browse the Maven pom.xml file for details of libraries and versions used.
+## Requirements
 
-Building the project
-You will need:
+Below is the front-end project code in React 18
+[Frontend](https://github.com/QuangDX001/Project_Front.git)
 
-Java JDK 8 or higher
-Maven 3.1.1 or higher
-Git
-Clone the project and use Maven to build the server
+For building and running the application you need:
 
-$ mvn clean install
+- JDK 1.8 or higher
+- Maven 3 or higher
+
+## Running the application locally
+
+There are several ways to run a Spring Boot application on your local machine. One way is to execute the `main` method in the `de.codecentric.springbootsample.Application` class from your IDE.
+
+Alternatively you can use the [Spring Boot Maven plugin](https://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-maven-plugin.html) like so:
+
+```shell
+mvn spring-boot:run
+```
+
+## Copyright
+
+Released under the Apache License 2.0. See the [LICENSE](https://github.com/codecentric/springboot-sample-app/blob/master/LICENSE) file.
