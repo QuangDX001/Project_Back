@@ -10,6 +10,7 @@ import lombok.*;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -59,4 +60,6 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Account account;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Task> tasks = new LinkedHashSet<>();
 }

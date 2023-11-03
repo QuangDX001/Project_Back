@@ -1,7 +1,7 @@
 package com.example.backend.payload.response;
 
 
-import com.example.backend.payload.dto.UserDTO;
+import com.example.backend.payload.dto.user.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

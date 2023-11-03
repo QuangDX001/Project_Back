@@ -2,7 +2,7 @@ package com.example.backend.security.service.users;
 
 
 import com.example.backend.model.User;
-import com.example.backend.payload.dto.ResetPasswordAdminDTO;
+import com.example.backend.payload.dto.user.ResetPasswordAdminDTO;
 import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;

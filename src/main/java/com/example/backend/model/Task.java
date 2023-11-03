@@ -1,10 +1,17 @@
 package com.example.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Entity
 @Table(name = "task")
 public class Task {
@@ -18,36 +25,9 @@ public class Task {
     @Column(name = "is_Done", nullable = false, columnDefinition = "boolean default false")
     private boolean isDone;
 
-    public Task() {
-    }
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)                
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public Task(Long id, String title, boolean isDone) {
-        this.id = id;
-        this.title = title;
-        this.isDone = isDone;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isDone() {
-        return isDone;
-    }
-
-    public void setDone(boolean done) {
-        isDone = done;
-    }
 }

@@ -1,11 +1,10 @@
-package com.example.backend.payload.dto;
+package com.example.backend.payload.dto.mapper;
 
 
 import com.example.backend.model.User;
-import com.example.backend.payload.request.SignupRequest;
+import com.example.backend.payload.dto.user.ProfileDTO;
+import com.example.backend.payload.dto.user.UserDTO;
 import com.example.backend.security.service.UserDetailsImpl;
-
-import java.time.Instant;
 
 /**
  * Created by Admin on 10/13/2023

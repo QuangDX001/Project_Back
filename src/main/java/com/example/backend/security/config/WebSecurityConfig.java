@@ -65,6 +65,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**",
                                         "/api/v1/**",
+                                        "/api/v1/*/*",
                                         "/api/crud/**",
                                         "/api/crud/*/*",
                                         "/api/crud/sendForgotPassword",

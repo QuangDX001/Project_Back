@@ -1,8 +1,8 @@
 package com.example.backend.controller;
 
 
-import com.example.backend.payload.dto.UserDTO;
-import com.example.backend.payload.dto.UserMapper;
+import com.example.backend.payload.dto.user.UserDTO;
+import com.example.backend.payload.dto.mapper.UserMapper;
 import com.example.backend.exception.ExceptionObject;
 import com.example.backend.payload.request.LoginRequest;
 import com.example.backend.payload.request.SignupRequest;

@@ -1,6 +1,6 @@
 package com.example.backend.payload.response;
 
-import com.example.backend.payload.dto.PagingDTO;
+import com.example.backend.payload.dto.user.PagingDTO;
 import lombok.Data;
 
 import java.util.List;

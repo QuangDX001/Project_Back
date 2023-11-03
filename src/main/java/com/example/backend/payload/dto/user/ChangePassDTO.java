@@ -1,4 +1,4 @@
-package com.example.backend.payload.dto;
+package com.example.backend.payload.dto.user;
 
 import com.example.backend.security.config.AppConstants;
 import jakarta.validation.constraints.NotBlank;
