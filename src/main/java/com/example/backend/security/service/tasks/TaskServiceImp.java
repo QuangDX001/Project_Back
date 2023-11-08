@@ -2,7 +2,9 @@ package com.example.backend.security.service.tasks;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.exception.TaskNotBelongToUser;
+import com.example.backend.model.Role;
 import com.example.backend.model.Task;
+import com.example.backend.model.User;
 import com.example.backend.payload.dto.task.TaskAddDTO;
 import com.example.backend.payload.dto.task.TaskUpdateDTO;
 import com.example.backend.repository.TaskRepository;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class TaskServiceImp implements TaskService{
@@ -78,7 +81,6 @@ public class TaskServiceImp implements TaskService{
 
         if(task.isPresent()){
             Task taskToDele = task.get();
-
             if(taskToDele.getUser().getId().equals(userId)){
                 taskRepository.delete(taskToDele);
             } else {

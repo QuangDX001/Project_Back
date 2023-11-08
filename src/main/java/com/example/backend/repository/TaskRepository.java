@@ -27,6 +27,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query(value = "SELECT t FROM Task t where t.user.id =:id order by t.id desc ")
     Page<Task> getListByUserId(Long id, Pageable pageable);
 
-    @Query(value = "SELECT t FROM Task t order by t.id desc")
+    @Query(value = "SELECT t \n" +
+            "FROM Task t\n" +
+            "JOIN User u ON u.id = t.user.id order by t.id asc")
     Page<Task> getAllTask(Pageable pageable);
 }

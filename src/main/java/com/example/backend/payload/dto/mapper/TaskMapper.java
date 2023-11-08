@@ -13,6 +13,7 @@ public class TaskMapper {
         dto.setUserId(task.getUser().getId());
         dto.setTitle(task.getTitle());
         dto.setDone((task.isDone()) ? true : false);
+        dto.setUsername(task.getUser().getUsername());
         return dto;
     }
 }

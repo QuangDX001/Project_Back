@@ -3,6 +3,7 @@ package com.example.backend.controller;
 
 import com.example.backend.exception.ExceptionObject;
 import com.example.backend.exception.StaffSelfDisableException;
+import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.payload.dto.mapper.UserMapper;
 import com.example.backend.payload.dto.user.ChangePassDTO;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -182,7 +184,7 @@ public class UserController {
     }
 
     @PutMapping("/resetPasswordForAdmin/{username}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")       
     public ResponseEntity<?> resetPassForAdmin(@PathVariable("username") String username,
                                                @Valid @RequestBody ResetPasswordAdminDTO dto){
         try{
@@ -209,8 +211,10 @@ public class UserController {
     public ResponseEntity<?> getUserByName(@PathVariable(name = "username") String username) {
         try {
             long id = getIdFromToken();
+            User u = userService.getUserById(id);
+            boolean isAdmin = hasRoleWithId(u, 3);
             User user = userService.getByUsername(username);
-            if (user.getId() == id) {
+            if (isAdmin || user.getId() == id) {
                 ProfileDTO dto = UserMapper.convertUserToProfile(user);
                 return new ResponseEntity<>(dto, HttpStatus.OK);
             } else {
@@ -228,5 +232,15 @@ public class UserController {
             jwtToken = requestTokenHeader.substring(7);
         }
         return jwtUtils.getIdFromJwtToken(jwtToken);
+    }
+
+    public boolean hasRoleWithId(User user, int roleId){
+        Set<Role> roles = user.getRoles();
+        for(Role role : roles){
+            if(role.getId() == roleId){
+                return true;
+            }
+        }
+        return false;
     }
 }
