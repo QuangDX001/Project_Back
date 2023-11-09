@@ -6,14 +6,12 @@ import com.example.backend.exception.StaffSelfDisableException;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.payload.dto.mapper.UserMapper;
-import com.example.backend.payload.dto.user.ChangePassDTO;
-import com.example.backend.payload.dto.user.ProfileDTO;
-import com.example.backend.payload.dto.user.ResetPasswordAdminDTO;
-import com.example.backend.payload.dto.user.UserDTO;
+import com.example.backend.payload.dto.user.*;
 import com.example.backend.payload.request.UpdateUserRequest;
 import com.example.backend.payload.response.PageResponse;
 import com.example.backend.security.config.AppConstants;
 import com.example.backend.security.jwt.JwtUtils;
+import com.example.backend.security.service.UserDetailsImpl;
 import com.example.backend.security.service.users.EmailService;
 import com.example.backend.security.service.users.UserService;
 import jakarta.validation.Valid;
@@ -24,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -168,16 +167,16 @@ public class UserController {
     public ResponseEntity<?> changeEnableStatus(@PathVariable(name = "id") Long id){
         try{
             User user = userService.getUserById(id);
-            ExceptionObject exceptionObject = new ExceptionObject();
-            Map<String, String> errorMap = new HashMap<>();
-            int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
-            exceptionObject.setCode(errorCode);
             long currentAdmin = getIdFromToken();
             if(currentAdmin == id){
                 throw new StaffSelfDisableException("You can not disable yourself");
             }
-            userService.changeEnableStatus(user);
-            return new ResponseEntity<>("Change status successfully", HttpStatus.OK);
+            User userRequest =userService.changeEnableStatus(user);
+
+            StatusDTO userResponse = modelMapper.map(userRequest, StatusDTO.class);
+
+            return ResponseEntity.ok().body(userResponse);
+            //return new ResponseEntity<>("Change status successfully", HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
@@ -200,8 +199,9 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable(name = "id") Long id) {
         try {
             User user = userService.getUserById(id);
-            ProfileDTO dto = UserMapper.convertUserToProfile(user);
-            return ResponseEntity.ok().body(dto);
+
+            StatusDTO userResponse = modelMapper.map(user, StatusDTO.class);
+            return ResponseEntity.ok().body(userResponse);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

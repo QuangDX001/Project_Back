@@ -1,5 +1,7 @@
 package com.example.backend.payload.request;
 
+import com.example.backend.payload.dto.account.AccountAddDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -15,13 +17,12 @@ import java.util.Set;
 
 @Data
 public class SignupRequest {
-  @NotBlank
+  @NotBlank(message = "Username is required")
   @Size(min = 3, max = 20)
   private String username;
 
-  @NotBlank
-  @Size(max = 50)
-  @Email
+  @NotBlank(message = "Email is required")
+  @Email(message = "Email format must be @gmail.com")
   private String email;
 
   private Set<String> role;
@@ -31,4 +32,7 @@ public class SignupRequest {
   @Pattern(regexp = AppConstants.PASSWORD_REGEX, message = "Password must be 6 - 20  characters long " +
           "and combination of 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character.")
   private String password;
+
+  @Valid
+  private AccountAddDTO accountAddDTO;
 }

@@ -1,7 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.exception.BankTransactionException;
-import com.example.backend.payload.dto.AccountDTO;
+import com.example.backend.payload.dto.account.AccountDTO;
 import com.example.backend.payload.request.TransferRequest;
 import com.example.backend.repository.AccountRepository;
 import com.example.backend.security.service.users.AccountService;

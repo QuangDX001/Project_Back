@@ -34,7 +34,7 @@ public interface UserService {
 
     User getByUsername(String username);
 
-    void changeEnableStatus(User user);
+    User changeEnableStatus(User user);
 
     PageResponse getPageUsers(int pageNo, int pageSize, String sortBy, String sortDir);
 }

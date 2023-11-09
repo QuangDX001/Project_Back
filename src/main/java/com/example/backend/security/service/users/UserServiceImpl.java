@@ -1,9 +1,11 @@
 package com.example.backend.security.service.users;
 
 import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.model.Account;
 import com.example.backend.model.ERole;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
+import com.example.backend.payload.dto.account.AccountAddDTO;
 import com.example.backend.payload.dto.user.PagingDTO;
 import com.example.backend.payload.dto.user.ResetPasswordAdminDTO;
 import com.example.backend.payload.request.SignupRequest;
@@ -36,6 +38,8 @@ public class UserServiceImpl implements UserService  {
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
+    private AccountService accountService;
+    @Autowired
     PasswordEncoder encoder;
     @Autowired
     ModelMapper modelMapper;
@@ -46,8 +50,8 @@ public class UserServiceImpl implements UserService  {
     }
 
     @Override
-    public User signUp(SignupRequest signupRequest) {
-        User user = convertSignupRequestToUser(signupRequest);
+    public User signUp(SignupRequest dto) {
+        User user = convertSignupRequestToUser(dto);
         return userRepository.save(user);
     }
 
@@ -111,13 +115,14 @@ public class UserServiceImpl implements UserService  {
     }
 
     @Override
-    public void changeEnableStatus(User user) {
+    public User changeEnableStatus(User user) {
         if(user.getEnable() == 1){
             user.setEnable((byte) 0);
         } else {
             user.setEnable((byte) 1);
         }
         userRepository.save(user);
+        return user;
     }
 
     @Override
@@ -180,10 +185,23 @@ public class UserServiceImpl implements UserService  {
         User user = new User();
         user.setUsername(signupRequest.getUsername());
         user.setPassword(encoder.encode(signupRequest.getPassword()));
+        user.setEmail(signupRequest.getEmail());
         Set<String> strRoles = signupRequest.getRole();
         Set<Role> roles = validatedRoles(strRoles);
         user.setRoles(roles);
         user.setEnable((byte) 1);
+
+        // Create an Account and set the user information
+        Account account = new Account();
+        account.setUser(user);
+        account.setFirstName(signupRequest.getAccountAddDTO().getFirstName());
+        account.setLastName(signupRequest.getAccountAddDTO().getLastName());
+        account.setAddress(signupRequest.getAccountAddDTO().getAddress());
+        account.setPhone(signupRequest.getAccountAddDTO().getPhone());
+
+        // Set the account information in the user
+        user.setAccount(account);
+
         return user;
     }
 }

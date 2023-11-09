@@ -1,7 +1,7 @@
 package com.example.backend.repository;
 
 import com.example.backend.model.Account;
-import com.example.backend.payload.dto.AccountDTO;
+import com.example.backend.payload.dto.account.AccountDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,7 +22,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 //            "on a.user_id = u.id", nativeQuery = true)
 //    List<IAccount> getUsernameAndBalance();
 
-    @Query("SELECT NEW com.example.backend.payload.dto.AccountDTO(u.id, " +
+    @Query("SELECT NEW com.example.backend.payload.dto.account.AccountDTO(u.id, " +
             "u.username, a.balance) " +
             "FROM Account a " +
             "JOIN a.user u ")
