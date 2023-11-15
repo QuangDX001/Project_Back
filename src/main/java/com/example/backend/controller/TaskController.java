@@ -43,25 +43,35 @@ public class TaskController {
     public ResponseEntity<Map<String, Object>> getAllTasks(
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id) {
+            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id,
+            @RequestParam(value = "filter", defaultValue = "all") String filter) {
         try {
             List<Task> list = new ArrayList<>();
             Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
             Page<Task> taskPage;
-            if (id == 0) {
-                taskPage = taskService.getAllTasks(pageable);
+            if (id != 0) {
+                if ("completed".equals(filter)) {
+                    taskPage = taskService.getTasksByStatusAndId(true, id, pageable);
+                } else if ("incomplete".equals(filter)) {
+                    taskPage = taskService.getTasksByStatusAndId(false, id, pageable);
+                } else {
+                    taskPage = taskService.getTaskById(id, pageable);
+                }
             } else {
-                taskPage = taskService.getTaskById(id, pageable);
+                taskPage = taskService.getAllTasks(pageable);
             }
+
             list = taskPage.getContent();
+            
             List<TaskDTO> listDto = list.stream().
                     map(TaskMapper::convertEntityToDTO).collect(Collectors.toList());
-            Map<String, Object> respone = new HashMap<>();
-            respone.put("list", listDto);
-            respone.put("currentPage", taskPage.getNumber());
-            respone.put("allTasks", taskPage.getTotalElements());
-            respone.put("allPages", taskPage.getTotalPages());
-            return new ResponseEntity<>(respone, HttpStatus.OK);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("list", listDto);
+            response.put("currentPage", taskPage.getNumber());
+            response.put("allTasks", taskPage.getTotalElements());
+            response.put("allPages", taskPage.getTotalPages());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("exception", e.getMessage());
@@ -94,11 +104,6 @@ public class TaskController {
 
             taskService.updateTask(existingTask, dto.getTitle());
             return ResponseEntity.ok().body(existingTask);
-//            if (updates.containsKey("title")) {
-//                String title = (String) updates.get("title");
-//                existingTask.setTitle(title);
-//            }
-//            taskRepository.save(existingTask);
         } catch (Exception e){
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("Something goes wrong"));
@@ -127,13 +132,6 @@ public class TaskController {
         } catch (TaskNotBelongToUser e){
             return new ResponseEntity<>("Task does not belong to the user", HttpStatus.FORBIDDEN);
         }
-//        Task existingTask = taskRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Task not exist with id: " + id));
-//
-//        taskRepository.delete(existingTask);
-//        Map<String, Boolean> response = new HashMap<>();
-//        response.put("deleted", Boolean.TRUE);
-//        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/all/{id}")
@@ -146,16 +144,6 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/completed")
-    public List<Task> getCompletedTasks() {
-        return taskService.getTasksByStatus(true);
-    }
-
-    @GetMapping("/incomplete")
-    public List<Task> getIncompleteTasks() {
-        return taskService.getTasksByStatus(false);
-    }
-
     @DeleteMapping("/completed/{id}")
     public ResponseEntity<String> deleteCompletedTasks(@PathVariable Long id) {
         try {
@@ -164,15 +152,5 @@ public class TaskController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error deleting done tasks" + e.getMessage());
         }
-//    public ResponseEntity<String> deleteCompletedTasks() {
-//        taskService.deleteTasksByStatus(true);
-//        return ResponseEntity.ok("Deleted completed tasks.");
-//    }
-    }
-
-    @DeleteMapping("/incomplete")
-    public ResponseEntity<String> deleteIncompleteTasks() {
-        taskService.deleteTasksByStatus(false);
-        return ResponseEntity.ok("Deleted incomplete tasks.");
     }
 }

@@ -37,10 +37,10 @@ public class TaskServiceImp implements TaskService{
     private HttpServletRequest request;
 
     @Override
-    public List<Task> getTasksByStatus(boolean status) {
-        return taskRepository.findByIsDone(status);
-    }
+    public Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable) {
+        return taskRepository.getListByStatusAndId(userId, pageable,  status);
 
+    }
     @Override
     public Task addTask(TaskAddDTO dto) {
         Task task = new Task();
@@ -58,12 +58,6 @@ public class TaskServiceImp implements TaskService{
     @Override
     public void deleteDoneTaskByUserId(Long userId) {
         taskRepository.deleteDoneTaskByUserId(userId);
-    }
-
-    @Override
-    public void deleteTasksByStatus(boolean status) {
-        List<Task> tasksToDelete = taskRepository.findByIsDone(status);
-        taskRepository.deleteAllInBatch(tasksToDelete);
     }
 
     @Override

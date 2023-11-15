@@ -8,15 +8,14 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface TaskService {
-    List<Task> getTasksByStatus(boolean status);
+
+    Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable);
 
     Task addTask(TaskAddDTO dto);
 
     Task updateTask(Task task, String title);
 
     void deleteDoneTaskByUserId(Long userId);
-    
-    void deleteTasksByStatus(boolean status);
 
     void deleteAllTasksByUserId(Long userId);
 
