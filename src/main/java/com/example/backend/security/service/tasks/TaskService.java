@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface TaskService {
 
-    Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable);
+    //Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable);
+
+    List<Task> getTasksByStatusAndId(boolean status, Long userId);
 
     Task addTask(TaskAddDTO dto);
 
@@ -23,8 +25,11 @@ public interface TaskService {
 
     void changeStatusTask(Task task);
 
-    Page<Task> getTaskById(Long id, Pageable pageable);
+    //Page<Task> getTaskById(Long id, Pageable pageable);
+    List<Task> getTaskById(Long id);
 
-    Page<Task> getAllTasks(Pageable pageable);
+    //Page<Task> getAllTasks(Pageable pageable);
+
+    List<Task> getAllTasks();
 
 }

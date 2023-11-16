@@ -38,53 +38,82 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+//    @GetMapping("/tasks")
+////    public List<Task> getAllTasks(){ return taskRepository.findAll();}
+//    public ResponseEntity<Map<String, Object>> getAllTasks(
+//            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+//            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+//            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id,
+//            @RequestParam(value = "filter", defaultValue = "all") String filter) {
+//        try {
+//            List<Task> list = new ArrayList<>();
+//            Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+//            Page<Task> taskPage;
+//            if (id != 0) {
+//                if ("completed".equals(filter)) {
+//                    taskPage = taskService.getTasksByStatusAndId(true, id, pageable);
+//                } else if ("incomplete".equals(filter)) {
+//                    taskPage = taskService.getTasksByStatusAndId(false, id, pageable);
+//                } else {
+//                    taskPage = taskService.getTaskById(id, pageable);
+//                }
+//            } else {
+//                taskPage = taskService.getAllTasks(pageable);
+//            }
+//
+//            list = taskPage.getContent();
+//
+//            List<TaskDTO> listDto = list.stream().
+//                    map(TaskMapper::convertEntityToDTO).collect(Collectors.toList());
+//
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("list", listDto);
+//            response.put("currentPage", taskPage.getNumber());
+//            response.put("allTasks", taskPage.getTotalElements());
+//            response.put("allPages", taskPage.getTotalPages());
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } catch (Exception e) {
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("exception", e.getMessage());
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//    }
+
     @GetMapping("/tasks")
-//    public List<Task> getAllTasks(){ return taskRepository.findAll();}
-    public ResponseEntity<Map<String, Object>> getAllTasks(
-            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+    public ResponseEntity<List<TaskDTO>> getAllTasksNoPaging(
             @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id,
             @RequestParam(value = "filter", defaultValue = "all") String filter) {
-        try {
-            List<Task> list = new ArrayList<>();
-            Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-            Page<Task> taskPage;
+        try{
+            List<Task> tasks;
+
             if (id != 0) {
                 if ("completed".equals(filter)) {
-                    taskPage = taskService.getTasksByStatusAndId(true, id, pageable);
+                    tasks = taskService.getTasksByStatusAndId(true, id);
                 } else if ("incomplete".equals(filter)) {
-                    taskPage = taskService.getTasksByStatusAndId(false, id, pageable);
+                    tasks = taskService.getTasksByStatusAndId(false, id);
                 } else {
-                    taskPage = taskService.getTaskById(id, pageable);
+                    tasks = taskService.getTaskById(id);
                 }
             } else {
-                taskPage = taskService.getAllTasks(pageable);
+                tasks = taskService.getAllTasks();
             }
 
-            list = taskPage.getContent();
-            
-            List<TaskDTO> listDto = list.stream().
-                    map(TaskMapper::convertEntityToDTO).collect(Collectors.toList());
+            List<TaskDTO> listDto = tasks.stream()
+                    .map(TaskMapper::convertEntityToDTO)
+                    .collect(Collectors.toList());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("list", listDto);
-            response.put("currentPage", taskPage.getNumber());
-            response.put("allTasks", taskPage.getTotalElements());
-            response.put("allPages", taskPage.getTotalPages());
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(listDto, HttpStatus.OK);
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("exception", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/tasks/addTask")
     public ResponseEntity<?> addTask(@Valid @RequestBody TaskAddDTO task) {
-        try{
+        try {
             taskService.addTask(task);
             return new ResponseEntity<>("Add task successfully", HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -98,13 +127,13 @@ public class TaskController {
 
     @PutMapping("/tasks/updateTask/{id}")
     public ResponseEntity<?> updateTask(@PathVariable Long id, @Valid @RequestBody TaskUpdateDTO dto) {
-        try{
+        try {
             Task existingTask = taskRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Task not exist with id: " + id));
 
             taskService.updateTask(existingTask, dto.getTitle());
             return ResponseEntity.ok().body(existingTask);
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("Something goes wrong"));
         }
@@ -112,7 +141,7 @@ public class TaskController {
 
     @PutMapping("/tasks/{id}")
     public ResponseEntity<?> changeStatus(@PathVariable Long id) {
-        try{
+        try {
             Task existingTask = taskRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Task not exist with id: " + id));
             taskService.changeStatusTask(existingTask);
@@ -124,22 +153,22 @@ public class TaskController {
 
     @DeleteMapping("/tasks/{id}")
     public ResponseEntity<?> deleTaskById(@PathVariable Long id, @RequestParam Long userId) {
-        try{
+        try {
             taskService.deleteTaskByIdAndUserId(id, userId);
             return new ResponseEntity<>("Task deleted successfully", HttpStatus.OK);
-        } catch (ResourceNotFoundException e){
+        } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>("Task not found", HttpStatus.NOT_FOUND);
-        } catch (TaskNotBelongToUser e){
+        } catch (TaskNotBelongToUser e) {
             return new ResponseEntity<>("Task does not belong to the user", HttpStatus.FORBIDDEN);
         }
     }
 
     @DeleteMapping("/all/{id}")
     public ResponseEntity<?> deleteAllTasks(@PathVariable Long id) {
-        try{
+        try {
             taskService.deleteAllTasksByUserId(id);
             return new ResponseEntity<>("Delete all successfully", HttpStatus.OK);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

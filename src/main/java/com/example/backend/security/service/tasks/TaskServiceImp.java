@@ -36,11 +36,16 @@ public class TaskServiceImp implements TaskService{
     @Autowired
     private HttpServletRequest request;
 
-    @Override
-    public Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable) {
-        return taskRepository.getListByStatusAndId(userId, pageable,  status);
+//    @Override
+//    public Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable) {
+//        return taskRepository.getListByStatusAndId(userId, pageable,  status);
+//    }
 
+    @Override
+    public List<Task> getTasksByStatusAndId(boolean status, Long userId) {
+        return taskRepository.getListByStatusAndId(userId,  status);
     }
+
     @Override
     public Task addTask(TaskAddDTO dto) {
         Task task = new Task();
@@ -96,14 +101,24 @@ public class TaskServiceImp implements TaskService{
     }
 
     @Override
-    public Page<Task> getTaskById(Long id, Pageable pageable) {
-        return taskRepository.getListByUserId(id, pageable);
+    public List<Task> getTaskById(Long id) {
+        return taskRepository.getListByUserId(id);
     }
 
     @Override
-    public Page<Task> getAllTasks(Pageable pageable) {
-        return taskRepository.getAllTask(pageable);
+    public List<Task> getAllTasks() {
+        return taskRepository.getAllTask();
     }
+
+//    @Override
+//    public Page<Task> getTaskById(Long id, Pageable pageable) {
+//        return taskRepository.getListByUserId(id, pageable);
+//    }
+//
+//    @Override
+//    public Page<Task> getAllTasks(Pageable pageable) {
+//        return taskRepository.getAllTask(pageable);
+//    }
 
     public long getIdFromToken() {
         final String requestTokenHeader = request.getHeader("Authorization");
