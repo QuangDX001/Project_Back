@@ -38,62 +38,14 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-//    @GetMapping("/tasks")
-////    public List<Task> getAllTasks(){ return taskRepository.findAll();}
-//    public ResponseEntity<Map<String, Object>> getAllTasks(
-//            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
-//            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-//            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id,
-//            @RequestParam(value = "filter", defaultValue = "all") String filter) {
-//        try {
-//            List<Task> list = new ArrayList<>();
-//            Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-//            Page<Task> taskPage;
-//            if (id != 0) {
-//                if ("completed".equals(filter)) {
-//                    taskPage = taskService.getTasksByStatusAndId(true, id, pageable);
-//                } else if ("incomplete".equals(filter)) {
-//                    taskPage = taskService.getTasksByStatusAndId(false, id, pageable);
-//                } else {
-//                    taskPage = taskService.getTaskById(id, pageable);
-//                }
-//            } else {
-//                taskPage = taskService.getAllTasks(pageable);
-//            }
-//
-//            list = taskPage.getContent();
-//
-//            List<TaskDTO> listDto = list.stream().
-//                    map(TaskMapper::convertEntityToDTO).collect(Collectors.toList());
-//
-//            Map<String, Object> response = new HashMap<>();
-//            response.put("list", listDto);
-//            response.put("currentPage", taskPage.getNumber());
-//            response.put("allTasks", taskPage.getTotalElements());
-//            response.put("allPages", taskPage.getTotalPages());
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//        } catch (Exception e) {
-//            Map<String, Object> response = new HashMap<>();
-//            response.put("exception", e.getMessage());
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//    }
-
     @GetMapping("/tasks")
     public ResponseEntity<List<TaskDTO>> getAllTasksNoPaging(
-            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id,
-            @RequestParam(value = "filter", defaultValue = "all") String filter) {
+            @RequestParam(value = "userId", defaultValue = AppConstants.DEFAULT_USER_ID, required = false) long id) {
         try{
             List<Task> tasks;
 
             if (id != 0) {
-                if ("completed".equals(filter)) {
-                    tasks = taskService.getTasksByStatusAndId(true, id);
-                } else if ("incomplete".equals(filter)) {
-                    tasks = taskService.getTasksByStatusAndId(false, id);
-                } else {
                     tasks = taskService.getTaskById(id);
-                }
             } else {
                 tasks = taskService.getAllTasks();
             }
