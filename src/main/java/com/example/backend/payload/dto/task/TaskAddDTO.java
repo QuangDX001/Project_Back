@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskAddDTO {
+    private Long id;
     @NotBlank(message = "Title is required")
     private String title;
 }

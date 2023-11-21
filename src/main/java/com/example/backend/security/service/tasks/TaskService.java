@@ -13,7 +13,7 @@ public interface TaskService {
 
     List<Task> getTasksByStatusAndId(boolean status, Long userId);
 
-    Task addTask(TaskAddDTO dto);
+    TaskAddDTO addTask(TaskAddDTO dto);
 
     Task updateTask(Task task, String title);
 

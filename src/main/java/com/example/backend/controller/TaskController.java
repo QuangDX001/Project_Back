@@ -63,8 +63,8 @@ public class TaskController {
     @PostMapping("/tasks/addTask")
     public ResponseEntity<?> addTask(@Valid @RequestBody TaskAddDTO task) {
         try {
-            taskService.addTask(task);
-            return new ResponseEntity<>("Add task successfully", HttpStatus.OK);
+            TaskAddDTO addedTask = taskService.addTask(task);
+            return ResponseEntity.ok().body(addedTask);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -47,11 +47,14 @@ public class TaskServiceImp implements TaskService{
     }
 
     @Override
-    public Task addTask(TaskAddDTO dto) {
+    public TaskAddDTO addTask(TaskAddDTO dto) {
         Task task = new Task();
         task.setUser(userRepository.getReferenceById(getIdFromToken()));
         task.setTitle(dto.getTitle());
-        return taskRepository.save(task);
+
+        Task savedTask = taskRepository.save(task);
+
+        return new TaskAddDTO(savedTask.getId(), savedTask.getTitle());
     }
 
     @Override
