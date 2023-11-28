@@ -25,6 +25,9 @@ public class Task {
     @Column(name = "is_Done", nullable = false, columnDefinition = "boolean default false")
     private boolean isDone;
 
+    @Column(name = "position", nullable = false)
+    private Integer position;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)                
     @JoinColumn(name = "user_id", nullable = false)

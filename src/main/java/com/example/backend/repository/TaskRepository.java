@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,27 +15,30 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    List<Task> findByIsDone(boolean isDone);
-
     List<Task> findTaskByUserId(Long userId);
 
-    // Xóa tất cả các công việc đã hoàn thành
     @Transactional
     @Modifying
-    @Query(value = "DELETE FROM Task t WHERE t.isDone = true AND t.user.id = :userId")
-    void deleteDoneTaskByUserId(Long userId);
+    @Query(value = "UPDATE Task t SET t.position = :position WHERE t.id = :id")
+    void updateTaskPosition(@Param("id") Long id, @Param("position") Integer position);
 
-    @Query(value = "SELECT t FROM Task t where t.user.id =:id order by t.id desc ")
+    @Query(value = "SELECT t FROM Task t where t.user.id =:id")
     List<Task> getListByUserId(Long id);
-    //Page<Task> getListByUserId(Long id, Pageable pageable);
 
-    @Query(value = "SELECT t FROM Task t where t.user.id =:id AND t.isDone =:status order by t.id desc ")
-    List<Task> getListByStatusAndId(Long id, boolean status);
-    //Page<Task> getListByStatusAndId(Long id, Pageable pageable, boolean status);
+    @Query("SELECT COALESCE(MIN(t.position), 0) FROM Task t WHERE t.user.id = :userId")
+    int getMinPositionForUser(@Param("userId") Long userId);
 
-    @Query(value = "SELECT t \n" +
-            "FROM Task t\n" +
-            "JOIN User u ON u.id = t.user.id order by t.id desc ")
+    @Modifying
+    @Query("UPDATE Task t SET t.position = t.position + :increment WHERE t.user.id = :userId AND t.id <> :taskId")
+    void incrementPositionsForUser(@Param("userId") Long userId, @Param("increment") int increment, @Param("taskId") Long taskId);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.position = t.position - 1 WHERE t.user.id = :userId AND t.position > :position")
+    void decrementPositionsForUser(@Param("userId") Long userId, @Param("position") int position);
+
+    @Query(value = "SELECT t FROM Task t JOIN User u ON u.id = t.user.id")
     List<Task> getAllTask();
-    //Page<Task> getAllTask(Pageable pageable);
+
+    @Query(value = "SELECT t FROM Task t where t.isDone = true and t.user.id =:id")
+    List<Task> getDoneTaskByUserId(Long id);
 }

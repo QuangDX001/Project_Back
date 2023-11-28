@@ -2,27 +2,31 @@ package com.example.backend.security.service.tasks;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.exception.TaskNotBelongToUser;
-import com.example.backend.model.Role;
 import com.example.backend.model.Task;
-import com.example.backend.model.User;
 import com.example.backend.payload.dto.task.TaskAddDTO;
-import com.example.backend.payload.dto.task.TaskUpdateDTO;
+import com.example.backend.payload.dto.task.TaskDTO;
 import com.example.backend.repository.TaskRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.security.jwt.JwtUtils;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskServiceImp implements TaskService{
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskServiceImp.class);
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private TaskRepository taskRepository;
@@ -36,25 +40,25 @@ public class TaskServiceImp implements TaskService{
     @Autowired
     private HttpServletRequest request;
 
-//    @Override
-//    public Page<Task> getTasksByStatusAndId(boolean status, Long userId, Pageable pageable) {
-//        return taskRepository.getListByStatusAndId(userId, pageable,  status);
-//    }
-
     @Override
-    public List<Task> getTasksByStatusAndId(boolean status, Long userId) {
-        return taskRepository.getListByStatusAndId(userId,  status);
-    }
-
-    @Override
+    @Transactional
     public TaskAddDTO addTask(TaskAddDTO dto) {
         Task task = new Task();
         task.setUser(userRepository.getReferenceById(getIdFromToken()));
         task.setTitle(dto.getTitle());
+        
+        // Find the maximum position for the user's tasks
+        int minPosition = taskRepository.getMinPositionForUser(getIdFromToken());
+
+        // Set the position for the new task
+        task.setPosition(minPosition);
 
         Task savedTask = taskRepository.save(task);
 
-        return new TaskAddDTO(savedTask.getId(), savedTask.getTitle());
+        // Increment the position of existing tasks
+        taskRepository.incrementPositionsForUser(getIdFromToken(), task.getPosition(), task.getId());
+            
+        return new TaskAddDTO(savedTask.getId(), savedTask.getTitle(), savedTask.getPosition(), savedTask.getUser().getId());
     }
 
     @Override
@@ -64,11 +68,29 @@ public class TaskServiceImp implements TaskService{
     }
 
     @Override
+    @Transactional
     public void deleteDoneTaskByUserId(Long userId) {
-        taskRepository.deleteDoneTaskByUserId(userId);
+        List<Task> doneTasks = taskRepository.getDoneTaskByUserId(userId);
+
+        if(!doneTasks.isEmpty()){
+            //get position of the tasks
+            List<Integer> positionToDele = doneTasks.stream()
+                    .map(Task::getPosition)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            //dele
+            taskRepository.deleteAll(doneTasks);
+
+            //update positions
+            for (Integer position : positionToDele) {
+                taskRepository.decrementPositionsForUser(userId, position);
+            }
+        }
     }
 
     @Override
+    @Transactional
     public void deleteAllTasksByUserId(Long userId) {
         List<Task> taskToDele = taskRepository.findTaskByUserId(userId);
 
@@ -78,13 +100,20 @@ public class TaskServiceImp implements TaskService{
     }
 
     @Override
+    @Transactional
     public void deleteTaskByIdAndUserId(Long id, Long userId) {
         Optional<Task> task = taskRepository.findById(id);
 
         if(task.isPresent()){
             Task taskToDele = task.get();
             if(taskToDele.getUser().getId().equals(userId)){
+                int positionToDele = taskToDele.getPosition();
+
+                //dele
                 taskRepository.delete(taskToDele);
+
+                //update position
+                taskRepository.decrementPositionsForUser(userId, positionToDele);
             } else {
                 throw new TaskNotBelongToUser("Tasks does not belong to user");
             }
@@ -102,6 +131,19 @@ public class TaskServiceImp implements TaskService{
         }
         taskRepository.save(task);
     }
+    
+    @Override
+    @Transactional
+    public void updateTaskPosition(List<TaskDTO> updatedTasks) {
+        for (int i = 0; i < updatedTasks.size(); i++) {
+            TaskDTO updatedTask = updatedTasks.get(i);
+            //logger.info("Received task update: " + updatedTask.getId() + ", " + updatedTask.getPosition());
+            taskRepository.updateTaskPosition(updatedTask.getId(), updatedTask.getPosition());
+
+            // Flush the Hibernate session to ensure changes are committed
+            entityManager.flush();
+        }
+    }                                                               
 
     @Override
     public List<Task> getTaskById(Long id) {
@@ -113,16 +155,6 @@ public class TaskServiceImp implements TaskService{
         return taskRepository.getAllTask();
     }
 
-//    @Override
-//    public Page<Task> getTaskById(Long id, Pageable pageable) {
-//        return taskRepository.getListByUserId(id, pageable);
-//    }
-//
-//    @Override
-//    public Page<Task> getAllTasks(Pageable pageable) {
-//        return taskRepository.getAllTask(pageable);
-//    }
-
     public long getIdFromToken() {
         final String requestTokenHeader = request.getHeader("Authorization");
         String jwtToken = null;
@@ -133,3 +165,4 @@ public class TaskServiceImp implements TaskService{
         return id;
     }
 }
+

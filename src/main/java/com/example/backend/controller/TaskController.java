@@ -13,18 +13,13 @@ import com.example.backend.repository.TaskRepository;
 import com.example.backend.security.config.AppConstants;
 import com.example.backend.security.service.tasks.TaskService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 36000)
@@ -32,6 +27,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/")
 //@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
 public class TaskController {
+    private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
     @Autowired
     private TaskRepository taskRepository;
 
@@ -56,6 +52,20 @@ public class TaskController {
 
             return new ResponseEntity<>(listDto, HttpStatus.OK);
         } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/tasks/updateOrder")
+    public ResponseEntity<?> updateTaskOrder(@RequestBody List<TaskDTO> updatedTask){
+        try{
+//            logger.info("Received task update request: " + updatedTask);
+//            for (TaskDTO task : updatedTask) {
+//                logger.info("Update detail - Task ID: {}, Position: {}", task.getId(), task.getPosition());
+//            }
+            taskService.updateTaskPosition(updatedTask);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

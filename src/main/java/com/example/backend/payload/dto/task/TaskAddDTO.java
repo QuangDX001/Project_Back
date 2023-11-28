@@ -15,4 +15,6 @@ public class TaskAddDTO {
     private Long id;
     @NotBlank(message = "Title is required")
     private String title;
+    private Integer position;
+    private Long userId;
 }
