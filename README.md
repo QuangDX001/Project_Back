@@ -10,7 +10,6 @@ Simple description:
 - A web app with task management (include authentication and authorization)
 
 - 3 type of user: Admin, Moderator and User
-- If you need pre data, I have included a .sql file (run with mySQL Workbench)
 
 ## Requirements
 
