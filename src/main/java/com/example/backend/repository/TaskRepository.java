@@ -22,9 +22,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query(value = "UPDATE Task t SET t.position = :position WHERE t.id = :id")
     void updateTaskPosition(@Param("id") Long id, @Param("position") Integer position);
 
-    @Query(value = "SELECT t FROM Task t where t.user.id =:id")
-    List<Task> getListByUserId(Long id);
-
+    //return the first non-null value, else return 0
     @Query("SELECT COALESCE(MIN(t.position), 0) FROM Task t WHERE t.user.id = :userId")
     int getMinPositionForUser(@Param("userId") Long userId);
 
@@ -36,9 +34,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("UPDATE Task t SET t.position = t.position - 1 WHERE t.user.id = :userId AND t.position > :position")
     void decrementPositionsForUser(@Param("userId") Long userId, @Param("position") int position);
 
+    @Query(value = "SELECT t FROM Task t where t.isDone = true and t.user.id =:id")
+    List<Task> getDoneTaskByUserId(Long id);
+
     @Query(value = "SELECT t FROM Task t JOIN User u ON u.id = t.user.id")
     List<Task> getAllTask();
 
-    @Query(value = "SELECT t FROM Task t where t.isDone = true and t.user.id =:id")
-    List<Task> getDoneTaskByUserId(Long id);
+    @Query(value = "SELECT t FROM Task t where t.user.id =:id")
+    List<Task> getListByUserId(Long id);
+
+    @Query(value = "SELECT t from Task t left join fetch t.subTasks where t.user.id = :id")
+    List<Task> getAllWithSubTaskByUserId(@Param("id") Long id);
 }

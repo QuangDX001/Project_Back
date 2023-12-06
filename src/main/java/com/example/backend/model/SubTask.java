@@ -1,23 +1,20 @@
 package com.example.backend.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Created by Admin on 11/29/2023
+ */
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "task")
-public class Task {
+@Table(name = "subTask")
+public class SubTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,12 +28,8 @@ public class Task {
     @Column(name = "position", nullable = false)
     private Integer position;
 
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SubTask> subTasks = new ArrayList<>();
-
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)                
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "primaryTask", nullable = false)
+    private Task task;
 }

@@ -4,14 +4,14 @@ package com.example.backend.controller;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.exception.TaskNotBelongToUser;
 import com.example.backend.model.Task;
-import com.example.backend.payload.dto.task.TaskAddDTO;
-import com.example.backend.payload.dto.task.TaskDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskAddDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskDTO;
 import com.example.backend.payload.dto.mapper.TaskMapper;
-import com.example.backend.payload.dto.task.TaskUpdateDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskUpdateDTO;
 import com.example.backend.payload.response.MessageResponse;
 import com.example.backend.repository.TaskRepository;
 import com.example.backend.security.config.AppConstants;
-import com.example.backend.security.service.tasks.TaskService;
+import com.example.backend.security.service.tasks.primaryTasks.TaskService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class TaskController {
             List<Task> tasks;
 
             if (id != 0) {
-                    tasks = taskService.getTaskById(id);
+                    tasks = taskService.getTaskAndSub(id);
             } else {
                 tasks = taskService.getAllTasks();
             }
@@ -66,7 +66,7 @@ public class TaskController {
             taskService.updateTaskPosition(updatedTask);
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (Exception e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

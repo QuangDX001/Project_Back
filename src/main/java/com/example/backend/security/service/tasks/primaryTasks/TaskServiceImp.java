@@ -1,10 +1,11 @@
-package com.example.backend.security.service.tasks;
+package com.example.backend.security.service.tasks.primaryTasks;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.exception.TaskNotBelongToUser;
 import com.example.backend.model.Task;
-import com.example.backend.payload.dto.task.TaskAddDTO;
-import com.example.backend.payload.dto.task.TaskDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskAddDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskDTO;
+import com.example.backend.repository.SubTaskRepository;
 import com.example.backend.repository.TaskRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.security.jwt.JwtUtils;
@@ -30,6 +31,9 @@ public class TaskServiceImp implements TaskService{
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private SubTaskRepository subTaskRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -73,6 +77,9 @@ public class TaskServiceImp implements TaskService{
         List<Task> doneTasks = taskRepository.getDoneTaskByUserId(userId);
 
         if(!doneTasks.isEmpty()){
+            //dele subTask
+            doneTasks.forEach(task -> subTaskRepository.deleteAll(task.getSubTasks()));
+
             //get position of the tasks
             List<Integer> positionToDele = doneTasks.stream()
                     .map(Task::getPosition)
@@ -95,6 +102,9 @@ public class TaskServiceImp implements TaskService{
         List<Task> taskToDele = taskRepository.findTaskByUserId(userId);
 
         if(!taskToDele.isEmpty()){
+            //dele subtask
+            taskToDele.forEach(task -> subTaskRepository.deleteAll(task.getSubTasks()));
+
             taskRepository.deleteAll(taskToDele);
         }
     }
@@ -108,6 +118,9 @@ public class TaskServiceImp implements TaskService{
             Task taskToDele = task.get();
             if(taskToDele.getUser().getId().equals(userId)){
                 int positionToDele = taskToDele.getPosition();
+
+                //dele subtask
+                subTaskRepository.deleteAll(taskToDele.getSubTasks());
 
                 //dele
                 taskRepository.delete(taskToDele);
@@ -153,6 +166,11 @@ public class TaskServiceImp implements TaskService{
     @Override
     public List<Task> getAllTasks() {
         return taskRepository.getAllTask();
+    }
+
+    @Override
+    public List<Task> getTaskAndSub(Long id) {
+        return taskRepository.getAllWithSubTaskByUserId(id);
     }
 
     public long getIdFromToken() {
