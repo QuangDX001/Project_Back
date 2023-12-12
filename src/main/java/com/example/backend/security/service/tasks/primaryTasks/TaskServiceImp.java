@@ -17,6 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,18 +54,31 @@ public class TaskServiceImp implements TaskService{
         task.setUser(userRepository.getReferenceById(getIdFromToken()));
         task.setTitle(dto.getTitle());
         
+
         // Find the maximum position for the user's tasks
         int minPosition = taskRepository.getMinPositionForUser(getIdFromToken());
 
         // Set the position for the new task
         task.setPosition(minPosition);
 
+        //Set the subTasks field to an empty list since there are no subtasks initially
+        //dto.setSubTasks(Collections.emptyList());
+
         Task savedTask = taskRepository.save(task);
 
         // Increment the position of existing tasks
         taskRepository.incrementPositionsForUser(getIdFromToken(), task.getPosition(), task.getId());
-            
-        return new TaskAddDTO(savedTask.getId(), savedTask.getTitle(), savedTask.getPosition(), savedTask.getUser().getId());
+
+        // Create a new TaskAddDTO with subtasks set to an empty list
+        TaskAddDTO responseDTO = new TaskAddDTO(
+                savedTask.getId(),
+                savedTask.getTitle(),
+                savedTask.getPosition(),
+                savedTask.getUser().getId(),
+                new ArrayList<>() // Empty list for subtasks
+        );
+
+        return responseDTO;
     }
 
     @Override
