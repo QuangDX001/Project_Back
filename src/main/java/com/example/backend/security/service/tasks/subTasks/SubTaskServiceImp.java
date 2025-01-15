@@ -13,6 +13,8 @@ import com.example.backend.repository.TaskRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import java.util.List;
  */
 @Service
 public class SubTaskServiceImp implements SubTaskService {
+    private static final Logger logger = LoggerFactory.getLogger(SubTaskServiceImp.class);
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -85,7 +88,7 @@ public class SubTaskServiceImp implements SubTaskService {
         } else {
             task.setDone(true);
         }
-        SubTask updatedTask =  subTaskRepository.save(task);
+        SubTask updatedTask = subTaskRepository.save(task);
 
         Long primaryTaskId = updatedTask.getTask().getId();
         return new ChangeStatusDTO("Change status successfully", primaryTaskId);
@@ -94,11 +97,14 @@ public class SubTaskServiceImp implements SubTaskService {
     @Override
     @Transactional
     public void updateTaskPosition(List<TaskDTO> task) {
-        for(TaskDTO taskDTO : task){
-            for (SubTaskDTO subTaskDTO: taskDTO.getSubTasks()){
+        for (TaskDTO taskDTO : task) {
+            for (int i = 0; i < taskDTO.getSubTasks().size(); i++) {
+                SubTaskDTO subTaskDTO = taskDTO.getSubTasks().get(i);
+                logger.info("Received task update: " + subTaskDTO.getId() + ", " + subTaskDTO.getPosition());
                 subTaskRepository.updateTaskPosition(subTaskDTO.getId(), subTaskDTO.getPosition());
+
+                entityManager.flush();
             }
-            entityManager.flush();
         }
     }
 }

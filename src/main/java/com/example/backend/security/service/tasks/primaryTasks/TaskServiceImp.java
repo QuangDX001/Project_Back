@@ -2,9 +2,14 @@ package com.example.backend.security.service.tasks.primaryTasks;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.exception.TaskNotBelongToUser;
+import com.example.backend.model.Account;
 import com.example.backend.model.Task;
+import com.example.backend.model.User;
+import com.example.backend.payload.dto.account.AccountByTaskIdDTO;
+import com.example.backend.payload.dto.account.AccountDTO;
 import com.example.backend.payload.dto.tasks.primaryTasks.TaskAddDTO;
 import com.example.backend.payload.dto.tasks.primaryTasks.TaskDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskUserAssignDTO;
 import com.example.backend.repository.SubTaskRepository;
 import com.example.backend.repository.TaskRepository;
 import com.example.backend.repository.UserRepository;
@@ -16,6 +21,8 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -68,6 +75,25 @@ public class TaskServiceImp implements TaskService{
 
         // Increment the position of existing tasks
         taskRepository.incrementPositionsForUser(getIdFromToken(), task.getPosition(), task.getId());
+
+        // Create a new TaskAddDTO with subtasks set to an empty list
+        TaskAddDTO responseDTO = new TaskAddDTO(
+                savedTask.getId(),
+                savedTask.getTitle(),
+                savedTask.getPosition(),
+                savedTask.getUser().getId(),
+                new ArrayList<>() // Empty list for subtasks
+        );
+
+        return responseDTO;
+    }
+
+    @Override
+    public TaskAddDTO addTaskForMod(TaskAddDTO dto) {
+        Task task = new Task();
+        task.setTitle(dto.getTitle());
+
+        Task savedTask = taskRepository.save(task);
 
         // Create a new TaskAddDTO with subtasks set to an empty list
         TaskAddDTO responseDTO = new TaskAddDTO(
@@ -172,7 +198,38 @@ public class TaskServiceImp implements TaskService{
             // Flush the Hibernate session to ensure changes are committed
             entityManager.flush();
         }
-    }                                                               
+    }
+
+    @Override
+    public void assignTaskToUser(TaskUserAssignDTO dto) {
+        Task originalTask = taskRepository.findById(dto.getTaskId())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        originalTask.setUser(user);
+        originalTask.setPosition(1);
+
+        taskRepository.save(originalTask);
+        
+    }
+
+    @Override
+    public void withdrawTaskFromUser(Long taskId) {
+        //Retrieve the task
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        task.setPosition(null);
+        task.setUser(null);
+
+        taskRepository.save(task);
+    }
+
+    @Override
+    public AccountByTaskIdDTO getAccountByTaskId(Long taskId) {
+        return taskRepository.getAccountByTaskId(taskId);
+    }
 
     @Override
     public List<Task> getTaskById(Long id) {
@@ -182,6 +239,11 @@ public class TaskServiceImp implements TaskService{
     @Override
     public List<Task> getAllTasks() {
         return taskRepository.getAllTask();
+    }
+
+    @Override
+    public Page<Task> getTasksForMod(Pageable pageable) {
+        return taskRepository.getAllTaskForMod(pageable);
     }
 
     @Override

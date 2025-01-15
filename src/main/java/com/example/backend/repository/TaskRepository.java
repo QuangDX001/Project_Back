@@ -1,6 +1,10 @@
 package com.example.backend.repository;
 
+import com.example.backend.model.Account;
 import com.example.backend.model.Task;
+import com.example.backend.payload.dto.account.AccountByTaskIdDTO;
+import com.example.backend.payload.dto.account.AccountDTO;
+import com.example.backend.payload.dto.tasks.primaryTasks.TaskDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,4 +49,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query(value = "SELECT t from Task t left join fetch t.subTasks where t.user.id = :id")
     List<Task> getAllWithSubTaskByUserId(@Param("id") Long id);
+
+    //@Query(value = "SELECT t from Task t left join fetch t.subTasks order by t.id desc ")
+    @Query(value = "SELECT t FROM Task t")
+    Page<Task> getAllTaskForMod(Pageable pageable);
+
+    @Query("SELECT NEW com.example.backend.payload.dto.account.AccountByTaskIdDTO(u.id ,u.username, u.email, a.phone, a.address)" +
+            "FROM Task t " +
+            "JOIN t.user u " +
+            "JOIN u.account a " +
+            "WHERE t.id = :taskId")
+    AccountByTaskIdDTO getAccountByTaskId(@Param("taskId") Long taskId);
 }

@@ -98,13 +98,15 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable long id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         try {
             long tokenId = getIdFromToken();
-            //User user = userService.getUserById(tokenId);
-            if (tokenId != id) {
-                throw new AccessDeniedException("You don't have the right to update this account");
-            } else {
+            User u = userService.getUserById(tokenId);
+            boolean isAdmin = hasRoleWithId(u, 3);
+            if (isAdmin || tokenId == id){
                 userService.updateUser(id, updateUserRequest);
                 return new ResponseEntity<>("Update user successfully.", HttpStatus.OK);
+            } else {
+                throw new AccessDeniedException("You don't have the right to update this account");
             }
+
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (Exception e) {

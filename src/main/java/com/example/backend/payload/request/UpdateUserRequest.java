@@ -30,7 +30,7 @@ public class UpdateUserRequest {
     private String address;
 
     @NotBlank(message = "Please input phone number!")
-    @Length(min = 10, max = 10, message = "Phone number must have 10 digits")
+    //@Length(min = 10, max = 10, message = "Phone number must have 10 digits")
     @Pattern(regexp = AppConstants.PHONE_REGEX, message = "Phone number only contain numbers")
     private String phone;
 

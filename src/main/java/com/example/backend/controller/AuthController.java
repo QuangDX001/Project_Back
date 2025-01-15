@@ -7,6 +7,7 @@ import com.example.backend.exception.ExceptionObject;
 import com.example.backend.payload.request.LoginRequest;
 import com.example.backend.payload.request.SignupRequest;
 import com.example.backend.payload.response.JwtResponse;
+import com.example.backend.payload.response.MessageResponse;
 import com.example.backend.repository.RoleRepository;
 import com.example.backend.security.jwt.JwtUtils;
 import com.example.backend.security.service.UserDetailsImpl;
@@ -14,7 +15,9 @@ import com.example.backend.security.service.users.UserServiceImpl;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -78,6 +81,7 @@ public class AuthController {
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     String jwt = jwtUtils.generateJwtToken(authentication);
+                    ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
 
                     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
                     UserDTO dto = UserMapper.convertEntityToDTO(userDetails);
@@ -86,7 +90,7 @@ public class AuthController {
                             .collect(Collectors.toList());
                     JwtResponse res = new JwtResponse(jwt, dto, roles);
 
-                    return ResponseEntity.ok(res);
+                    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(res);
                 }
             }
         } catch (BadCredentialsException ex) {
@@ -122,5 +126,12 @@ public class AuthController {
         } catch (RuntimeException e){
             throw new RuntimeException(e);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new MessageResponse("You've been signed out!"));
     }
 }

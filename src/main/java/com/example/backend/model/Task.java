@@ -28,7 +28,7 @@ public class Task {
     @Column(name = "is_Done", nullable = false, columnDefinition = "boolean default false")
     private boolean isDone;
 
-    @Column(name = "position", nullable = false)
+    @Column(name = "position")
     private Integer position;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -36,7 +36,7 @@ public class Task {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)                
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
 }

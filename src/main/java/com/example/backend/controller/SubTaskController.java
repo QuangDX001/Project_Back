@@ -1,9 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.exception.ResourceNotFoundException;
-import com.example.backend.exception.TaskNotBelongToUser;
 import com.example.backend.model.SubTask;
-import com.example.backend.model.Task;
 import com.example.backend.payload.dto.tasks.subTasks.ChangeStatusDTO;
 import com.example.backend.payload.dto.tasks.subTasks.SubTaskAddDTO;
 import com.example.backend.payload.dto.tasks.primaryTasks.TaskDTO;
@@ -12,8 +10,6 @@ import com.example.backend.payload.response.MessageResponse;
 import com.example.backend.repository.SubTaskRepository;
 import com.example.backend.security.service.tasks.subTasks.SubTaskService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +26,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/")
 public class SubTaskController {
-    private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
     @Autowired
     private SubTaskService subTaskService;
 

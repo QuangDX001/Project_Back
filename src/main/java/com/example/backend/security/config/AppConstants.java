@@ -7,6 +7,6 @@ public class AppConstants {
     public static final String DEFAULT_SORT_DIRECTION = "asc";
     public static final String DEFAULT_USER_ID = "0";
 
-    public static final String PHONE_REGEX = "^\\d+$";
+    public static final String PHONE_REGEX = "^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]\\d{3}[\\s.-]\\d{4}$";
     public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{6,20}$";
 }
